@@ -139,19 +139,14 @@ app.post('/token', async (req, res) => {
 
 app.get('/userinfo', async (req, res) => {
     try {
-        let token = req.header('authorization');
-        token = token.split(" ")[1];
-        const verified = jwt.verify(token, CLIENT_SECRET);
+        const token = req.headers.authorization.substr(7);
+        jwt.verify(token, CLIENT_SECRET);
 
         if (!tokens.some(tok => tok.access_token === token))
             throw Error
 
         console.log("UserInfo Fetched")
-
-        if (verified.sub === crypto.createHash('md5').update(USER_EMAIL).digest('hex'))
-            return res.send({ "email": USER_EMAIL })
-        else
-            throw Error
+        return res.send({ "email": USER_EMAIL })
     } catch{
         return res.send({ "message": "Invalid Token" })
     }
@@ -159,11 +154,10 @@ app.get('/userinfo', async (req, res) => {
 
 app.post('/revoke', async (req, res) => {
     try {
-        let token = req.header('authorization')
-        token = token.split(" ")[1]
-        const verified = jwt.verify(token, CLIENT_SECRET)
+        const token = req.headers.authorization.substr(7);
+        jwt.verify(token, CLIENT_SECRET)
 
-        if (!tokens.some(tok => tok.refresh_token === req.body.refresh_token) || !verified)
+        if (!tokens.some(tok => tok.refresh_token === req.body.refresh_token))
             throw Error
 
         console.log("Refresh Token Revoked");
